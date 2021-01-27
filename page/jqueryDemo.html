@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js" type="text/javascript" charset="utf-8"></script>
+</head>
+
+<body>
+    <form action="http://127.0.0.1:8888/process_post" method="post">
+        name: <input type="text" name="names" /> 
+        password: <input type="password" name="passwords" />
+        <input class="myForm" type="button" value="submit" />
+    </form>
+
+    <script type="text/javascript">
+        $(function () {
+            $(".myForm").on('click', function () {  //添加点击事件
+                var names = $("input:nth-of-type(1)").val();   //获取两个的参数
+                var passwords = $("input:nth-of-type(2)").val();
+                $.post("http://127.0.0.1:8888/process_post", { //jq的post方法
+                    names: names,
+                    passwords: passwords
+                }, function (res) {
+                    alert("提交成功");
+                })
+            })
+        })
+    </script>
+</body>
+
+</html>
