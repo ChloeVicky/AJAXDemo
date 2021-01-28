@@ -17,10 +17,10 @@ app.post('/process_post', urlencodedParser, function (req, res) {  //post处理�
         "passwords": req.body.passwords
     };
     console.log(response);
-    let nameFilterResult = nameFilter(response);
-    // res.send(nameFilterResult); send back something to let frondend know the duplication
+    let nameFilterResult = nameDuplicationCheck(response);
+    res.send(nameFilterResult); // Send back something to let frondend know the duplication
 
-    res.send("1"); //返回的数据，这里根据情况写
+    // res.send("1"); //返回的数据，这里根据情况写
     res.end();
 
 })
@@ -32,20 +32,22 @@ var server = app.listen(8888, function () {  //监听
 })
 
 /**
- * return false if there is duplication among username
- * return true if the name is distinct
+ * Return true if there is duplication among username
+ * Return false if the name is distinct
  * @param {Object} response 
+ * @returns {boolean} true or false
  */
-function nameFilter(response) {
+function nameDuplicationCheck(response) {
     let name = response.names;
     let pwd = response.passwords;
 
     for (i = 0; i < nameRecord.length; i++) {
         // check user name
-        if (nameRecord[i].username == name) 
-            return false;
+        if (nameRecord[i].username == name)
+            return true;
     }
-    return true;
+
+    return false;
 }
 
 var nameRecord = [
