@@ -2,7 +2,6 @@ var express = require('express');
 var app = express();
 
 //  主页输出 "Hello World"
-// Make some change
 app.get('/', function (req, res) {
     console.log("主页 GET 请求");
     res.send('Hello GET');
