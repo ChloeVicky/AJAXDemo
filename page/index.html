@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <title>AJAX</title>
+</head>
+<body>
+    <div class="banner" id="banner"></div>
+    <div class="banner" id="banner_jq"></div>
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script>
+        //封装通用的XMLHttpRequest对象，兼容各个版本
+        function createXHR(){
+            //判断浏览器是否将HMLHttpRequest作为本地对象来实现，针对IE7，Firefox，opera等
+            if(typeof XMLHttpRequest!="undefined"){
+                //如果是本地对象
+                return new XMLHttpRequest();
+            }else if(typeof ActiveXObject!="undefined"){
+                //在一些老的浏览器，不支持
+                //将所有可能出现的ActiveXObject版本放在一个数组内
+                var xhrArr=['Microsoft.XMLHTTP','MSXML2.XMLHTTP.6.0','MSXML2.XMLHTTP.5.0',
+                'MSXML2.XMLHTTP.4.0','MSXML2.XMLHTTP.3.0','MSXML2.XMLHTTP.2.0'];
+                //遍历创建XMLHttpRequest对象
+                var len=xhrArr.length;
+                for(var i=0;i<len;i++){
+                    try {
+                        //创建XMLHttpRequest对象
+                        xhr=new ActiveXObject[xhrArr[i]];
+                        break;
+                    } catch (error) {
+                        
+                    }
+                }
+                return xhr;
+            }else{
+                throw new Error('找不到版本')
+            }
+        }
+        //XMLHttpRequest对象
+        var xhr=createXHR(),data=null;
+        // console.log(xhr);
+
+        //响应XMLHttpRequest对象状态变化的函数
+        //onreadystatechange在readyState属性发生改变时触发
+        xhr.onreadystatechange=function(){
+            //异步调用成功，响应内容解析完成，意味着可以在客户端调用了
+            if(xhr.readyState===4){
+                if((xhr.status>=200&&xhr.status<300)||(xhr.status===304)){
+                    //获得服务器返回的数据
+                    // console.log(xhr.responseText);//返回的是字符串
+
+                    //尽量少用eval()
+                    // data=eval("("+xhr.responseText+")");
+                    // console.log(data.slider);
+
+                    //parse()
+                    data=JSON.parse(xhr.responseText);
+                    // console.log(data.slider);
+
+                    //渲染数据到页面中
+                    renderDataToDom();
+                }
+            }
+        }
+
+        //创建请求
+        xhr.open("GET","/json/slider.json",true);
+        //发送请求
+        //当使用get方法需要传递参数时候，可以这么写xhr.open("get","./server/slider.json?user=zhangsan&id=1",true)
+        
+        //当使用post方法需要传递参数时候，不可以写在open方法里面，需要写在send()里面，同时需要设置http头部信息
+        //send({user:"zhangsan",id"6});
+        //xhr.setRequestHeader("Content-type","application/x-www-form-unlencoded");
+        xhr.send(null);
+
+        //渲染数据
+        function renderDataToDom(){
+            var imgs=data.slider,i,
+                len=imgs.length,
+                banner=document.getElementById("banner"),
+                str="";
+            for(i=0;i<len;i++){
+                // console.log(imgs[i]);
+                // var a=document.createElement('a');
+                // a.href=
+                // a.innerHTML='<img src=';
+                // banner.appendChild(a);
+                str+='<a href="'+imgs[i].linkUrl+'"><img src="'+imgs[i].picUrl+'"></a>';
+            }
+            // console.log(str);
+            banner.innerHTML=str;
+        }
+
+        //jquery
+        $.ajax({
+            url:"/json/slider.json", //请求地址
+            type:"get", //请求方式
+            async:"true", //同步异步
+            dataType:"json", //数据格式
+            success:function(imgData){ //请求成功的回调
+                // console.log(imgData);
+                JQrenderDataToDom(imgData.slider);
+            }
+        })
+        //渲染数据
+        function JQrenderDataToDom(data){
+            var str="";
+            $.each(data,function(index,obj){
+                // console.log(obj);
+                str+='<a href="'+obj.linkUrl+'"><img src="'+obj.picUrl+'"></a>';
+            })
+            $("#banner_jq").html(str);
+        }
+
+        //封装JSONP
+        function getJSONP(url,callback){
+            if(!url){
+                return;
+            }
+            //声明一个数组，用来随机生成函数名
+            var a=['a','b','c','d','e','f','g','i','h','j'],
+                r1=Math.floor(Math.random()*a.length),
+                r2=Math.floor(Math.random()*a.length),
+                r3=Math.floor(Math.random()*a.length),
+                name='getJSONP'+a[r1]+a[r2]+a[r3],
+                cbname='getJSONP.'+name;
+                // console.log(name);
+            //判断url地址中是否有？号
+            if(url.indexOf('?')===-1){
+                url+='?jsonp='+cbname;
+            }else{
+                url+='&jsonp='+cbname;
+            }
+            // console.log(url);
+            //动态创建script标签
+            var script=document.createElement('script');
+
+            //定义被脚本执行的回调函数
+            getJSONP[name]=function(data){
+                try {
+                    callback&&callback(data);
+                } catch (error) {
+                    
+                }finally{
+                    //最后删除该函数及script标签
+                    delete getJSONP[name];
+                    script.parentNode.removeChild(script);
+                }
+            }
+
+            //定义script的src
+            script.src=url;
+            //挂在dom中
+            document.getElementsByTagName("head")[0].appendChild(script);
+        }
+        getJSONP("http://class.imooc.com/api/jsonp",function(data){
+            console.log(data);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/register.css">
+    <title>register</title>
+</head>
+<body>
+    <div class="register">
+        <p class="title">
+            <span>登陆</span>
+            <span class="current">注册</span>
+        </p>
+        <div class="form">
+            <div>
+                <span>+86</span>
+                <input type="text" name="user" id="user" placeholder="请输入手机号" autocomplete="off" />
+                <i id="user_icon"></i>
+                <p class="info" id="user_info"></p>
+            </div>
+            <div>
+                <input type="password" name="pwd" id="pwd" placeholder="请输入密码" />
+                <i></i>
+                <p class="info"></p>
+            </div>
+            <p class="button">
+                <a href="javascript:void(0)" id="signup-btn" class="btn">注册</a>
+            </p>
+        </div>
+    </div>
+    <script type="text/javascript" src="js/register.js"></script>
+    <script>
+        var user=document.getElementById("user"),
+            pwd=document.getElementById("pwd"),
+            signup=document.getElementById("signup-btn"),
+            userInfo=document.getElementById("user_info"),
+            userIcon=document.getElementById("user_icon");
+        //检测用户名
+        function checkuser(){
+            var userVal=user.value,
+                userReg=/^1[3578]\d{9}$/;
+            // console.log(userVal);
+            //验证手机号码是否合法
+            if(!userReg.test(userVal)){
+                userInfo.innerHTML='手机号码无效!';
+                userIcon.className='no';
+            }else{
+                userInfo.innerHTML='';
+                userIcon.className='';
+                //发起请求
+                $.ajax({
+                    url:"http://127.0.0.1:8888/process_post",
+                    method:'post',
+                    async:true,
+                    data:{
+                        username:userVal
+                    },
+                    success:function(data){
+                        // console.log(data);
+                        if(data==true){
+                            userIcon.className='no';
+                            userInfo.innerHTML='此用户名已经存在！'
+                        }
+                        if(data==false){
+                            userIcon.className='ok';
+                        }
+                        
+                    }
+                })
+            }
+
+        }
+        //绑定事件
+        user.addEventListener("blur",checkuser,false);
+    </script>
+</body>
+</html>
